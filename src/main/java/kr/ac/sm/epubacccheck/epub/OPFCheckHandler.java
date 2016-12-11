@@ -62,6 +62,14 @@ public class OPFCheckHandler extends DefaultHandler
 		{
 			metadataLine = locator.getLineNumber();
 		}
+		
+		if (qName.equals("meta"))
+		{
+			if (attributes.getValue("property").equals("rendition:layout-pre-paginated"))
+			{
+				EpubInfo.isFixedLayout = true;
+			}
+		}
 
 		if (qName.equals("item"))
 		{

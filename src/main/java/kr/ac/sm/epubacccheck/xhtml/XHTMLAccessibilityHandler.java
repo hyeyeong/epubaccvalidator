@@ -222,11 +222,21 @@ public class XHTMLAccessibilityHandler extends DefaultHandler
 		}
 
 		// JSARIA-002 javascript
+		if (qName.equals("script"))
+		{
+			report.addMessage(MessageId.JSARIA_002, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
+		}
+		
+		if (attributes.toString().matches("^on"))
+		{
+			report.addMessage(MessageId.JSARIA_002, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
+		}
 		
 		// NOTE-001 (with CSS)
 		if (qName.equals("sup"))
 		{
 			report.addMessage(MessageId.NOTE_001, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
+			report.addMessage(MessageId.CSS_008, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
 		}
 		
 		// CSS-001
