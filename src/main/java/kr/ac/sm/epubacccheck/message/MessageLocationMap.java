@@ -65,7 +65,10 @@ public class MessageLocationMap
 		locations.put(MessageId.SVG_001, new ArrayList<EPUBLocation>());
 		locations.put(MessageId.SVG_002, new ArrayList<EPUBLocation>());
 		locations.put(MessageId.SMIL_001, new ArrayList<EPUBLocation>());
-		locations.put(MessageId.SMIL_002, new ArrayList<EPUBLocation>());
+		locations.put(MessageId.SMIL_001_W, new ArrayList<EPUBLocation>());
+		locations.put(MessageId.SMIL_002_1, new ArrayList<EPUBLocation>());
+		locations.put(MessageId.SMIL_002_2, new ArrayList<EPUBLocation>());
+		locations.put(MessageId.SMIL_002_3, new ArrayList<EPUBLocation>());
 	}
 
 	public static EPUBLocation getEPUBLocation(MessageId messageId, int index)

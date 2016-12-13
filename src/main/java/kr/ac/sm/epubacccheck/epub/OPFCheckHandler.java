@@ -21,6 +21,7 @@ public class OPFCheckHandler extends DefaultHandler
 	
 	private boolean hasDcLanguage = false;
 	private boolean hasSpine = false;
+	private boolean hasMediaOverlay = false;
 	
 	private int xhtmlFileCount = 0;
 	private int metadataLine = 0;
@@ -102,6 +103,23 @@ public class OPFCheckHandler extends DefaultHandler
 			}
 
 			epubFileList.add(epubFile);
+
+			if (attributes.getValue("media-overlay") != null)
+			{
+				hasMediaOverlay = true;
+			}
+		}
+
+		if (qName.equals("item") && hasMediaOverlay)
+		{
+			if (attributes.getValue("media-type") == null)
+			{
+				report.addMessage(MessageId.SMIL_002_1, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
+			}
+			else if (attributes.getValue("media-type").equals("") || attributes.getValue("media-type").isEmpty())
+			{
+				report.addMessage(MessageId.SMIL_001_W, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
+			}
 		}
 		
 		// OPF-001

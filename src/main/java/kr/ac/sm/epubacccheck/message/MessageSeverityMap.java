@@ -61,7 +61,10 @@ public class MessageSeverityMap
 		severities.put(MessageId.SVG_001, MessageSeverity.ERROR);
 		severities.put(MessageId.SVG_002, MessageSeverity.ERROR);
 		severities.put(MessageId.SMIL_001, MessageSeverity.ERROR);
-		severities.put(MessageId.SMIL_002, MessageSeverity.WARNING);
+		severities.put(MessageId.SMIL_001_W, MessageSeverity.ERROR);
+		severities.put(MessageId.SMIL_002_1, MessageSeverity.WARNING);
+		severities.put(MessageId.SMIL_002_2, MessageSeverity.WARNING);
+		severities.put(MessageId.SMIL_002_3, MessageSeverity.WARNING);
 	}
 	
 	public static MessageSeverity getMessgeSeverity(MessageId id)

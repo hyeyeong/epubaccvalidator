@@ -60,7 +60,10 @@ public enum MessageId
 	SVG_001			("SVG-001"),
 	SVG_002			("SVG-002"),
 	SMIL_001		("SMIL-001"),
-	SMIL_002		("SMIL-002");
+	SMIL_001_W		("SMIL-001-W"),
+	SMIL_002_1		("SMIL-002-1"),
+	SMIL_002_2		("SMIL-002-2"),
+	SMIL_002_3		("SMIL-002-3");
 
 	private final String messageId;
 	
