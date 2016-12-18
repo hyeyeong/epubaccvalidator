@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import kr.ac.sm.epubacccheck.message.CustomMessageHandler;
 import kr.ac.sm.epubacccheck.message.MessageId;
 import kr.ac.sm.epubacccheck.message.MessageLocationMap;
 
@@ -21,6 +22,13 @@ public class Report
 	public void addMessage(MessageId messageId, EPUBLocation location)
 	{
 		MessageLocationMap.addLocation(messageId, location);
+	}
+	
+	public void addMessage(MessageId messageId, String customMessage, EPUBLocation location)
+	{
+		MessageLocationMap.addLocation(messageId, location);
+		System.out.println("custom message: " + customMessage);
+		CustomMessageHandler.addCustomMessage(messageId, customMessage);
 	}
 	
 	public void createReport()

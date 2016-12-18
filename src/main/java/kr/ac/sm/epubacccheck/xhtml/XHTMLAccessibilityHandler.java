@@ -168,8 +168,7 @@ public class XHTMLAccessibilityHandler extends DefaultHandler
 			{
 				report.addMessage(MessageId.IMG_003, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
 			}
-			
-			if (attributes.getValue("alt").isEmpty() || attributes.getValue("alt").equals(""))
+			else if (attributes.getValue("alt").isEmpty() || attributes.getValue("alt").equals(""))
 			{
 				report.addMessage(MessageId.IMG_003_W, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
 			}

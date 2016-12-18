@@ -21,6 +21,16 @@ public class Message
 		this.locations = MessageLocationMap.getEPUBLocationList(messageId);
 		this.message = getBundleMessage(messageId.toString());
 	}
+	
+	public Message(MessageId messageId, String customMessage)
+	{
+		locations = new ArrayList<EPUBLocation>();
+		
+		this.messageId = messageId;
+		this.severity = MessageSeverityMap.getMessgeSeverity(messageId);
+		this.locations = MessageLocationMap.getEPUBLocationList(messageId);
+		this.message = customMessage;
+	}
 
 	public MessageId getMessageId()
 	{

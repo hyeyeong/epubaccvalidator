@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import kr.ac.sm.epubacccheck.message.CustomMessageHandler;
 import kr.ac.sm.epubacccheck.message.Message;
 import kr.ac.sm.epubacccheck.message.MessageId;
 import kr.ac.sm.epubacccheck.message.MessageLocationMap;
@@ -31,6 +32,11 @@ public class ReportWriter
 		File reportFile = new File(filePath);
 		ObjectMapper mapper = new ObjectMapper();
 		ArrayList<MessageId> messageIdList = new ArrayList<MessageId>();
+		ArrayList<MessageId> customMessageIds = new ArrayList<MessageId>();
+		ArrayList<String> customMessages = new ArrayList<String>();
+		MessageId customMessageId;
+		
+		customMessageIds = CustomMessageHandler.getCustomMessageIdList();
 		
 		for (MessageId messageId : MessageId.values())
 		{
@@ -40,11 +46,32 @@ public class ReportWriter
 				messageIdList.add(messageId);
 			}
 		}
-		
-		for (int i = 0; i < messageIdList.size(); i++)
+
+		if (!customMessageIds.isEmpty() || customMessageIds.size() != 0)
 		{
-			Message message = new Message(messageIdList.get(i));
-			messages.add(message);
+			for (int messageIdIndex = 0; messageIdIndex < messageIdList.size(); messageIdIndex++)
+			{
+				customMessageId = customMessageIds.get(messageIdIndex);
+				if (customMessageId.equals(messageIdList.get(messageIdIndex)))
+				{
+					customMessages = CustomMessageHandler.getCustomMessages(customMessageIds.get(messageIdIndex));
+					for (int customMessageIndex = 0; customMessageIndex < customMessages.size(); customMessageIndex++)
+					{
+						messages.add(new Message(customMessageId, customMessages.get(customMessageIndex)));
+					}
+				}
+				else
+				{
+					messages.add(new Message(messageIdList.get(messageIdIndex)));
+				}
+			}
+		}
+		else
+		{
+			for (int messageIdIndex = 0; messageIdIndex < messageIdList.size(); messageIdIndex++)
+			{
+				messages.add(new Message(messageIdList.get(messageIdIndex)));
+			}
 		}
 
 		messageMap.put("message", messages);

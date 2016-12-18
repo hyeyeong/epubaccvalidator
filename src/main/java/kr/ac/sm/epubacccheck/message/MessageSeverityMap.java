@@ -41,7 +41,7 @@ public class MessageSeverityMap
 		severities.put(MessageId.MEDIA_001_W, MessageSeverity.WARNING);
 		severities.put(MessageId.MEDIA_002_W, MessageSeverity.WARNING);
 		severities.put(MessageId.JSARIA_001, MessageSeverity.ERROR);
-		severities.put(MessageId.JSARIA_002, MessageSeverity.ERROR);
+		severities.put(MessageId.JSARIA_002, MessageSeverity.WARNING);
 		severities.put(MessageId.JSARIA_003, MessageSeverity.WARNING);
 		severities.put(MessageId.NOTE_001, MessageSeverity.ERROR);
 		

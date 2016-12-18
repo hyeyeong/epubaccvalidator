@@ -66,9 +66,12 @@ public class OPFCheckHandler extends DefaultHandler
 		
 		if (qName.equals("meta"))
 		{
-			if (attributes.getValue("property").equals("rendition:layout-pre-paginated"))
+			if (attributes.getValue("property") != null)
 			{
-				EpubInfo.isFixedLayout = true;
+				if (attributes.getValue("property").equals("rendition:layout-pre-paginated"))
+				{
+					EpubInfo.isFixedLayout = true;
+				}
 			}
 		}
 

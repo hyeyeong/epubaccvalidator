@@ -10,6 +10,7 @@ import org.idpf.epubcheck.util.css.CssGrammar.CssAtRule;
 import org.idpf.epubcheck.util.css.CssGrammar.CssDeclaration;
 import org.idpf.epubcheck.util.css.CssGrammar.CssSelector;
 
+import kr.ac.sm.epubacccheck.message.MessageBundle;
 import kr.ac.sm.epubacccheck.message.MessageId;
 import kr.ac.sm.epubacccheck.report.EPUBLocation;
 import kr.ac.sm.epubacccheck.report.Report;
@@ -20,12 +21,15 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 	private boolean hasVisibility = false;
 	private String filePath;
 	private Report report;
-	private double[] yb;
 	private double[] yd;
 	private double[] luminances;
+	private int backgroundColorLineNumber = 0;
+	private int fontColorLineNumber = 0;
+	private String backgroundCustomMessage;
+	private String backgroundColorCode;
+	private String fontColorCode;
 	
 	private boolean hasL1 = false;
-	
 
 	public void error(CssException e) throws CssException
 	{
@@ -73,7 +77,7 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 	{
 		// TODO Auto-generated method stub
 		String cssAttribute = declaration.getName().get();
-		yb = new double[3];
+		String tempColorCode;
 		yd = new double[3];
 
 		// CSS-002
@@ -156,49 +160,33 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		// CSS-010 background-color contrast - STYLE-003
 		if (cssAttribute.equals("background-color"))
 		{
+			backgroundColorLineNumber = declaration.getLocation().getLine();
+			hasL1 = false;
+			
 			// WCAG20 contrast ratio
 			for (CssGrammar.CssConstruct cssc : declaration.getComponents())
 			{
 				System.out.println(cssc.toString());
+
 				if (cssc.toString().contains("#"))
 				{
-					int codeIndex = cssc.toString().indexOf("#");
-					
-					String tempCode = cssc.toString().substring(codeIndex + 1, codeIndex + 3);
-					yb[0] = Integer.parseInt(tempCode, 16);
-					
-					tempCode = cssc.toString().substring(codeIndex + 3, codeIndex + 5);
-					yb[1] = Integer.parseInt(tempCode, 16);
-					
-					tempCode = cssc.toString().substring(codeIndex + 5, codeIndex + 7);
-					yb[2] = Integer.parseInt(tempCode, 16);
-					
-					calculateContrastRatio(yb);
+					tempColorCode = cssc.toString();
+					calculateContrastRatio(tempColorCode);
 				}
 			}
 		}
 		
 		if (cssAttribute.equals("color"))
 		{
+			fontColorLineNumber = declaration.getLocation().getLine();
+		
 			for (CssGrammar.CssConstruct cssc : declaration.getComponents())
 			{
 				System.out.println(cssc.toString());
 				if (cssc.toString().contains("#"))
 				{
-					int codeIndex = cssc.toString().indexOf("#");
-					
-					String tempCode = cssc.toString().substring(codeIndex + 1, codeIndex + 3);
-					yd[0] = Integer.parseInt(tempCode, 16);
-					
-					tempCode = cssc.toString().substring(codeIndex + 3, codeIndex + 5);
-					yd[1] = Integer.parseInt(tempCode, 16);
-					
-					tempCode = cssc.toString().substring(codeIndex + 5, codeIndex + 7);
-					yd[2] = Integer.parseInt(tempCode, 16);
-					
-					System.out.println(yd[0] + " " + yd[1] + " " + yd[2]);
-					
-					calculateContrastRatio(yd);
+					tempColorCode = cssc.toString();
+					calculateContrastRatio(tempColorCode);
 				}
 			}
 		}
@@ -227,7 +215,44 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		}
 	}
 	
-	private void calculateContrastRatio(double[] colorcode)
+	public void calculateContrastRatio(String colorValue)
+	{
+		int openBracketIndex = colorValue.toString().indexOf("{");
+		int closeBracketIndex = colorValue.toString().indexOf("}");
+		
+		backgroundColorCode = colorValue.substring(openBracketIndex + 1, closeBracketIndex);
+		
+		String temp;
+		String tempCode;
+		
+		if (backgroundColorCode.length() == 4)
+		{
+			temp = new StringBuilder()
+					.append("#")
+  					.append(backgroundColorCode.substring(1, 2))
+					.append(backgroundColorCode.substring(1, 2))
+					.append(backgroundColorCode.substring(2, 3))
+					.append(backgroundColorCode.substring(2, 3))
+					.append(backgroundColorCode.substring(3, 4))
+					.append(backgroundColorCode.substring(3, 4)).toString();
+			
+			backgroundColorCode = temp;
+			System.out.println("color code: " + backgroundColorCode);
+		}
+		
+		tempCode = backgroundColorCode.substring(1, 3);
+		yd[0] = Integer.parseInt(tempCode, 16);
+		
+		tempCode = backgroundColorCode.substring(3, 5);
+		yd[1] = Integer.parseInt(tempCode, 16);
+		
+		tempCode = backgroundColorCode.substring(5, 7);
+		yd[2] = Integer.parseInt(tempCode, 16);
+		
+		calculateRatio(yd);
+	}
+	
+	private void calculateRatio(double[] hexColorCode)
 	{
 		double[] sRGB = new double[3];
 		double[] RGB = new double[3];
@@ -236,7 +261,7 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		
 		for (int i = 0; i < 3; i++)
 		{
-			sRGB[i] = Math.floor(colorcode[i] / 255 * 10000d) / 10000d;
+			sRGB[i] = Math.floor(hexColorCode[i] / 255 * 10000d) / 10000d;
 			
 			if (sRGB[i] <= 0.03928)
 			{
@@ -247,7 +272,7 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 				RGB[i] = Math.floor(Math.pow((sRGB[i] + 0.055) / 1.055, 2.4) * 10000d) / 10000d;
 			}
 			
-			System.out.println("srgb: " + sRGB[i] + " / rgb: " + colorcode[i] + " / RGB: " + RGB[i]);
+			System.out.println("srgb: " + sRGB[i] + " / rgb: " + hexColorCode[i] + " / RGB: " + RGB[i]);
 		}
 		
 		luminance = Math.floor(((0.2126 * RGB[0]) + (0.7152 * RGB[1]) + (0.0722 * RGB[2])) * 10000d) / 10000d;
@@ -261,18 +286,32 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		else
 		{
 			luminances[1] = luminance;
+			if (luminances[0] > luminances[1])
+			{
+				ratio = (luminances[0] + 0.05) / (luminances[1] + 0.05);
+			}
+			else
+			{
+				ratio = (luminances[1] + 0.05) / (luminances[0] + 0.05);
+			}
+			
+			makeBackgroundColorMessage(ratio);
+			report.addMessage(MessageId.CSS_010, backgroundCustomMessage, new EPUBLocation(filePath, backgroundColorLineNumber, 1));
 		}
-		
-		if (luminances[0] > luminances[1])
-		{
-			ratio = (luminances[0] + 0.05) / (luminances[1] + 0.05);
-		}
-		else
-		{
-			ratio = (luminances[1] + 0.05) / (luminances[0] + 0.05);
-		}
+	}
 
-		System.out.println("ratio: " + ratio);
-		hasL1 = false;
+	private void makeBackgroundColorMessage(double ratio)
+	{
+		String originMessage = MessageBundle.getMessage(MessageId.CSS_010.toString());
+		backgroundCustomMessage =  new StringBuilder().append(originMessage)
+								  .append(" background-color: ")
+								  .append(backgroundColorCode)
+								  .append(" / font-color: ")
+								  .append(fontColorCode)
+								  .append(" / ratio (over 7 is AAA - the best color pair): ")
+								  .append(ratio)
+								  .append(" / font color line number: ")
+								  .append(fontColorLineNumber)
+								  .toString();
 	}
 }
