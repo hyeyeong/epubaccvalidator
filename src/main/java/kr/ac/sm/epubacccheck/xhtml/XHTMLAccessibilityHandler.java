@@ -74,8 +74,13 @@ public class XHTMLAccessibilityHandler extends DefaultHandler
 		{
 			isSection = true;
 			startingElementLineNumber = locator.getLineNumber();
+			
+			if (attributes.getValue("epub:type") == null)
+			{
+				report.addMessage(MessageId.EPUBTYPE_001, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
+			}
 
-			if (attributes.getValue("epub:type") == null || attributes.getValue("aria-label") == null || attributes.getValue("title") == null)
+			if (attributes.getValue("aria-label") == null || attributes.getValue("title") == null)
 			{
 				report.addMessage(MessageId.TITLE_002, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
 			}
@@ -110,7 +115,7 @@ public class XHTMLAccessibilityHandler extends DefaultHandler
 			report.addMessage(MessageId.STYLE_002, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
 		}
 		
-		// STYLE-003 noise background: css -> if selector is div, span, body, p ... etc, background-image is error
+		// STYLE-003
 		
 		// TABLE-001, TABLE-002, TABLE-003
 		if (qName.equals("table"))
@@ -287,6 +292,6 @@ public class XHTMLAccessibilityHandler extends DefaultHandler
 	
 	public void endDocument()
 	{
-		System.out.println("xhtml validation complete");
+		;
 	}
 }

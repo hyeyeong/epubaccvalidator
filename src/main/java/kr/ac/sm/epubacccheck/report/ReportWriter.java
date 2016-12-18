@@ -32,32 +32,31 @@ public class ReportWriter
 		File reportFile = new File(filePath);
 		ObjectMapper mapper = new ObjectMapper();
 		ArrayList<MessageId> messageIdList = new ArrayList<MessageId>();
-		ArrayList<MessageId> customMessageIds = new ArrayList<MessageId>();
+		ArrayList<MessageId> cmIdList = new ArrayList<MessageId>();
 		ArrayList<String> customMessages = new ArrayList<String>();
-		MessageId customMessageId;
 		
-		customMessageIds = CustomMessageHandler.getCustomMessageIdList();
+		cmIdList = CustomMessageHandler.getCustomMessageIdList();
 		
 		for (MessageId messageId : MessageId.values())
 		{
 			List<EPUBLocation> locations = MessageLocationMap.getEPUBLocationList(messageId);
+			
 			if (locations.size() != 0)
 			{
 				messageIdList.add(messageId);
 			}
 		}
 
-		if (!customMessageIds.isEmpty() || customMessageIds.size() != 0)
+		for (int messageIdIndex = 0; messageIdIndex < messageIdList.size(); messageIdIndex++)
 		{
-			for (int messageIdIndex = 0; messageIdIndex < messageIdList.size(); messageIdIndex++)
+			if (cmIdList.size() != 0 && !cmIdList.isEmpty())
 			{
-				customMessageId = customMessageIds.get(messageIdIndex);
-				if (customMessageId.equals(messageIdList.get(messageIdIndex)))
+				if (cmIdList.contains(messageIdList.get(messageIdIndex)))
 				{
-					customMessages = CustomMessageHandler.getCustomMessages(customMessageIds.get(messageIdIndex));
-					for (int customMessageIndex = 0; customMessageIndex < customMessages.size(); customMessageIndex++)
+					customMessages = CustomMessageHandler.getCustomMessages(messageIdList.get(messageIdIndex));
+					for (String cmessage : customMessages)
 					{
-						messages.add(new Message(customMessageId, customMessages.get(customMessageIndex)));
+						messages.add(new Message(messageIdList.get(messageIdIndex), cmessage));
 					}
 				}
 				else
@@ -65,10 +64,7 @@ public class ReportWriter
 					messages.add(new Message(messageIdList.get(messageIdIndex)));
 				}
 			}
-		}
-		else
-		{
-			for (int messageIdIndex = 0; messageIdIndex < messageIdList.size(); messageIdIndex++)
+			else
 			{
 				messages.add(new Message(messageIdList.get(messageIdIndex)));
 			}

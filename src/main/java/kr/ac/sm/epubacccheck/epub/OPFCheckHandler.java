@@ -51,7 +51,7 @@ public class OPFCheckHandler extends DefaultHandler
 	
 	public void startDocument()
 	{
-		System.out.println("document start");
+		;
 	}
 	
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException

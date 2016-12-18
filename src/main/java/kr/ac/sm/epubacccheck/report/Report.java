@@ -27,7 +27,6 @@ public class Report
 	public void addMessage(MessageId messageId, String customMessage, EPUBLocation location)
 	{
 		MessageLocationMap.addLocation(messageId, location);
-		System.out.println("custom message: " + customMessage);
 		CustomMessageHandler.addCustomMessage(messageId, customMessage);
 	}
 	

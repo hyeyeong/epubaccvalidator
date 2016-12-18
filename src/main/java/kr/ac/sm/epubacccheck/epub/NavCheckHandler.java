@@ -5,6 +5,7 @@ import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import kr.ac.sm.epubacccheck.message.MessageBundle;
 import kr.ac.sm.epubacccheck.message.MessageId;
 import kr.ac.sm.epubacccheck.report.EPUBLocation;
 import kr.ac.sm.epubacccheck.report.Report;
@@ -30,6 +31,7 @@ public class NavCheckHandler extends DefaultHandler
 	
 	private Report report;
 	private String filePath;
+	private String fileCountMessage;
 	
 	public void setDocumentLocator(Locator locator)
 	{
@@ -71,7 +73,7 @@ public class NavCheckHandler extends DefaultHandler
 				{
 					hasATag = true;
 				}
-				if (qName.equals("span"))
+				else if (qName.equals("span"))
 				{
 					hasSpanTag = true;
 					report.addMessage(MessageId.NAV_002_2, new EPUBLocation(filePath, locator.getLineNumber(), locator.getColumnNumber()));
@@ -109,6 +111,11 @@ public class NavCheckHandler extends DefaultHandler
 		if (qName.equals("li"))
 		{
 			isLiInNav = false;
+			
+			if (!hasATag && !hasSpanTag)
+			{
+				report.addMessage(MessageId.NAV_002_1, new EPUBLocation(filePath, navLineNumber, 1));
+			}
 		}
 		
 		if (qName.equals("nav"))
@@ -118,9 +125,7 @@ public class NavCheckHandler extends DefaultHandler
 	}
 	
 	public void endDocument()
-	{
-		System.out.println("nav: file count > " + EpubInfo.epubFileCount);
-		
+	{	
 		if (!hasNav)
 		{
 			report.addMessage(MessageId.NAV_001, new EPUBLocation(filePath, 1, 1));
@@ -128,12 +133,8 @@ public class NavCheckHandler extends DefaultHandler
 		
 		if (liCountInNav != EpubInfo.epubFileCount)
 		{
-			report.addMessage(MessageId.NAV_001_W, new EPUBLocation(filePath, navLineNumber, 1));
-		}
-		
-		if (!hasATag && !hasSpanTag)
-		{
-			report.addMessage(MessageId.NAV_002_1, new EPUBLocation(filePath, navLineNumber, 1));
+			makeEpubFileCountMessage();
+			report.addMessage(MessageId.NAV_001_W, fileCountMessage, new EPUBLocation(filePath, navLineNumber, 1));
 		}
 		
 		if (!hasLoI)
@@ -155,5 +156,16 @@ public class NavCheckHandler extends DefaultHandler
 		{
 			report.addMessage(MessageId.NAV_006, new EPUBLocation(filePath, 1, 1));
 		}
+	}
+	
+	private void makeEpubFileCountMessage()
+	{
+		String originMessage = MessageBundle.getMessage(MessageId.NAV_001_W.toString());
+		fileCountMessage =  new StringBuilder().append(originMessage)
+								.append(" File Count in nav.xhtml: ")
+								.append(liCountInNav)
+								.append(" / File Count in EPUB: ")
+								.append(EpubInfo.epubFileCount)
+								.toString();
 	}
 }

@@ -18,7 +18,6 @@ import kr.ac.sm.epubacccheck.util.EpubInfo;
 
 public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandler
 {
-	private boolean hasVisibility = false;
 	private String filePath;
 	private Report report;
 	private double[] yd;
@@ -28,8 +27,11 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 	private String backgroundCustomMessage;
 	private String backgroundColorCode;
 	private String fontColorCode;
+	private String ratioGrade;
 	
-	private boolean hasL1 = false;
+	private boolean isBackgroundColor = false;
+	boolean hasL1 = false;
+	boolean hasL2 = false;
 
 	public void error(CssException e) throws CssException
 	{
@@ -161,19 +163,19 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		if (cssAttribute.equals("background-color"))
 		{
 			backgroundColorLineNumber = declaration.getLocation().getLine();
-			hasL1 = false;
 			
 			// WCAG20 contrast ratio
 			for (CssGrammar.CssConstruct cssc : declaration.getComponents())
 			{
-				System.out.println(cssc.toString());
-
 				if (cssc.toString().contains("#"))
 				{
 					tempColorCode = cssc.toString();
+					isBackgroundColor = true;
 					calculateContrastRatio(tempColorCode);
 				}
 			}
+			
+			isBackgroundColor = false;
 		}
 		
 		if (cssAttribute.equals("color"))
@@ -182,7 +184,6 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		
 			for (CssGrammar.CssConstruct cssc : declaration.getComponents())
 			{
-				System.out.println(cssc.toString());
 				if (cssc.toString().contains("#"))
 				{
 					tempColorCode = cssc.toString();
@@ -194,8 +195,6 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		// CSS-011
 		if (cssAttribute.equals("visibility") || cssAttribute.equals("display"))
 		{
-			hasVisibility = true;
-			
 			for (CssGrammar.CssConstruct cssc : declaration.getComponents())
 			{
 				if (cssc.toCssString() == null || cssc.toCssString().equals("hidden") || cssc.toCssString().equals("none"))
@@ -209,47 +208,59 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 	public void endDocument()
 	{
 		// TODO Auto-generated method stub
-		if (!hasVisibility)
-		{
-			//System.out.println(x);
-		}
 	}
 	
 	public void calculateContrastRatio(String colorValue)
 	{
-		int openBracketIndex = colorValue.toString().indexOf("{");
-		int closeBracketIndex = colorValue.toString().indexOf("}");
-		
-		backgroundColorCode = colorValue.substring(openBracketIndex + 1, closeBracketIndex);
-		
-		String temp;
+		String rgcColorCode = makeColorCode(colorValue);
 		String tempCode;
 		
-		if (backgroundColorCode.length() == 4)
-		{
-			temp = new StringBuilder()
-					.append("#")
-  					.append(backgroundColorCode.substring(1, 2))
-					.append(backgroundColorCode.substring(1, 2))
-					.append(backgroundColorCode.substring(2, 3))
-					.append(backgroundColorCode.substring(2, 3))
-					.append(backgroundColorCode.substring(3, 4))
-					.append(backgroundColorCode.substring(3, 4)).toString();
-			
-			backgroundColorCode = temp;
-			System.out.println("color code: " + backgroundColorCode);
-		}
-		
-		tempCode = backgroundColorCode.substring(1, 3);
+		tempCode = rgcColorCode.substring(1, 3);
 		yd[0] = Integer.parseInt(tempCode, 16);
 		
-		tempCode = backgroundColorCode.substring(3, 5);
+		tempCode = rgcColorCode.substring(3, 5);
 		yd[1] = Integer.parseInt(tempCode, 16);
 		
-		tempCode = backgroundColorCode.substring(5, 7);
+		tempCode = rgcColorCode.substring(5, 7);
 		yd[2] = Integer.parseInt(tempCode, 16);
 		
 		calculateRatio(yd);
+	}
+	
+	private String makeColorCode(String colorValue)
+	{
+		int openBracketIndex = colorValue.toString().indexOf("{");
+		int closeBracketIndex = colorValue.toString().indexOf("}");
+		
+		String rgbColorCode = colorValue.substring(openBracketIndex + 1, closeBracketIndex);
+		
+		String temp;
+		
+		if (rgbColorCode.length() == 4)
+		{
+			temp = new StringBuilder()
+					.append("#")
+  					.append(rgbColorCode.substring(1, 2))
+					.append(rgbColorCode.substring(1, 2))
+					.append(rgbColorCode.substring(2, 3))
+					.append(rgbColorCode.substring(2, 3))
+					.append(rgbColorCode.substring(3, 4))
+					.append(rgbColorCode.substring(3, 4)).toString();
+			
+			rgbColorCode = temp;
+			System.out.println("color code: " + rgbColorCode);
+		}
+		
+		if (isBackgroundColor)
+		{
+			backgroundColorCode = rgbColorCode;
+		}
+		else
+		{
+			fontColorCode = rgbColorCode;
+		}
+		
+		return rgbColorCode;
 	}
 	
 	private void calculateRatio(double[] hexColorCode)
@@ -278,14 +289,21 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 		luminance = Math.floor(((0.2126 * RGB[0]) + (0.7152 * RGB[1]) + (0.0722 * RGB[2])) * 10000d) / 10000d;
 		System.out.println("luminance: " + luminance);
 		
-		if (!hasL1)
+		if (isBackgroundColor && hasL1 == false)
 		{
 			luminances[0] = luminance;
+			System.out.println("luminance[0]: " + luminances[0]);
 			hasL1 = true;
 		}
-		else
+		else if (hasL2 == false)
 		{
 			luminances[1] = luminance;
+			System.out.println("luminance[1]: " + luminances[1]);
+			hasL2 = true;
+		}
+		
+		if (hasL1 && hasL2)
+		{
 			if (luminances[0] > luminances[1])
 			{
 				ratio = (luminances[0] + 0.05) / (luminances[1] + 0.05);
@@ -295,7 +313,21 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 				ratio = (luminances[1] + 0.05) / (luminances[0] + 0.05);
 			}
 			
+			if (ratio >= 7)
+			{
+				ratioGrade = "AAA";
+			}
+			else if (ratio >= 4.5)
+			{
+				ratioGrade = "AA";
+			}
+			else
+			{
+				ratioGrade = "NOT AVAILABLE";
+			}
+
 			makeBackgroundColorMessage(ratio);
+			report.addMessage(MessageId.STYLE_003, backgroundCustomMessage, new EPUBLocation(filePath, backgroundColorLineNumber, 1));
 			report.addMessage(MessageId.CSS_010, backgroundCustomMessage, new EPUBLocation(filePath, backgroundColorLineNumber, 1));
 		}
 	}
@@ -308,8 +340,8 @@ public class CSSAccessibilityHandler implements CssContentHandler, CssErrorHandl
 								  .append(backgroundColorCode)
 								  .append(" / font-color: ")
 								  .append(fontColorCode)
-								  .append(" / ratio (over 7 is AAA - the best color pair): ")
-								  .append(ratio)
+	 							  .append(" / ratio (grade): ")
+								  .append(ratio + "(" + ratioGrade + ")")
 								  .append(" / font color line number: ")
 								  .append(fontColorLineNumber)
 								  .toString();
